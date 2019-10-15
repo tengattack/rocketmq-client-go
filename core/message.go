@@ -17,10 +17,11 @@
 package rocketmq
 
 /*
-#cgo LDFLAGS: -L/usr/local/lib/ -lrocketmq
+#cgo LDFLAGS: -L/usr/local/lib/ -L../lib -lrocketmq -lonsrocketmq
+#include <stdlib.h>
 #include <rocketmq/CMessage.h>
 #include <rocketmq/CMessageExt.h>
-#include <stdlib.h>
+#include "ons_message.h"
 */
 import "C"
 import (
@@ -34,6 +35,7 @@ type Message struct {
 	Keys           string
 	Body           string
 	DelayTimeLevel int
+	StartDeliverTime int64
 	Property       map[string]string
 }
 
@@ -65,6 +67,35 @@ func goMsgToC(gomsg *Message) *C.struct_CMessage {
 		key := C.CString(k)
 		value := C.CString(v)
 		C.SetMessageProperty(cmsg, key, value)
+		C.free(unsafe.Pointer(key))
+		C.free(unsafe.Pointer(value))
+	}
+	return cmsg
+}
+
+func goMsgToONS(gomsg *Message) *C.struct_ONSMessage {
+	cs := C.CString(gomsg.Topic)
+	var cmsg = C.CreateONSMessage(cs)
+	C.free(unsafe.Pointer(cs))
+
+	cs = C.CString(gomsg.Tags)
+	C.SetONSMessageTags(cmsg, cs)
+	C.free(unsafe.Pointer(cs))
+
+	cs = C.CString(gomsg.Keys)
+	C.SetONSMessageKeys(cmsg, cs)
+	C.free(unsafe.Pointer(cs))
+
+	cs = C.CString(gomsg.Body)
+	C.SetONSMessageBody(cmsg, cs)
+	C.free(unsafe.Pointer(cs))
+
+	C.SetONSStartDeliverTime(cmsg, C.longlong(gomsg.StartDeliverTime))
+
+	for k, v := range gomsg.Property {
+		key := C.CString(k)
+		value := C.CString(v)
+		C.SetONSMessageProperty(cmsg, key, value)
 		C.free(unsafe.Pointer(key))
 		C.free(unsafe.Pointer(value))
 	}

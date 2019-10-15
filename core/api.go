@@ -71,6 +71,11 @@ func NewProducer(config *ProducerConfig) (Producer, error) {
 	return newDefaultProducer(config)
 }
 
+// NewONSProducer create a new producer with config
+func NewONSProducer(config *ProducerConfig) (Producer, error) {
+	return newONSProducer(config)
+}
+
 // ProducerConfig define a producer
 type ProducerConfig struct {
 	ClientConfig
