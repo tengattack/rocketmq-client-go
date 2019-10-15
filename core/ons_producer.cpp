@@ -60,23 +60,18 @@ int SendONSMessageSync(ONSProducer* producer, ONSMessage* msg, CSendResult* resu
   if (producer == NULL || producer->pProducer == NULL) {
     return NULL_POINTER;
   }
+  if (msg == NULL || result == NULL) {
+    return NULL_POINTER;
+  }
 
   ons::Message *onsMsg = (ons::Message *)msg;
 
-  const std::map<std::string, std::string> props = onsMsg->getSystemProperties();
-  for (std::map<std::string, std::string>::const_iterator it = props.begin(); it != props.end(); ++it) {
-    std::cout << "props: " << it->first << "=" << it->second << "\n";
-  }
-
   // 发送消息，只要不抛出异常，就代表发送成功
-  try
-  {
+  try {
     ons::SendResultONS sendResult = producer->pProducer->send(*onsMsg);
     strcpy(result->msgId, sendResult.getMessageId());
     result->sendStatus = E_SEND_OK;
-  }
-  catch(ons::ONSClientException & e)
-  {
+  } catch(ons::ONSClientException & e) {
     result->sendStatus = CSendStatus(e.GetError());
     return PRODUCER_SEND_SYNC_FAILED;
   }

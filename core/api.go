@@ -53,6 +53,7 @@ type ProducerModel int
 const (
 	CommonProducer  = ProducerModel(1)
 	OrderlyProducer = ProducerModel(2)
+	CommonONSProducer = ProducerModel(3)
 )
 
 func (mode ProducerModel) String() string {
@@ -61,6 +62,8 @@ func (mode ProducerModel) String() string {
 		return "CommonProducer"
 	case OrderlyProducer:
 		return "OrderlyProducer"
+	case CommonONSProducer:
+		return "CommonONSProducer"
 	default:
 		return "Unknown"
 	}
@@ -68,12 +71,10 @@ func (mode ProducerModel) String() string {
 
 // NewProducer create a new producer with config
 func NewProducer(config *ProducerConfig) (Producer, error) {
+	if config.ProducerModel == CommonONSProducer {
+		return newONSProducer(config)
+	}
 	return newDefaultProducer(config)
-}
-
-// NewONSProducer create a new producer with config
-func NewONSProducer(config *ProducerConfig) (Producer, error) {
-	return newONSProducer(config)
 }
 
 // ProducerConfig define a producer
